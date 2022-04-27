@@ -1,0 +1,51 @@
+# Copyright the Hyperledger Fabric contributors. All rights reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: $(SourceBranchName)-$(Date:yyyyMMdd)$(Rev:.rrr)
+trigger:
+- master
+pr:
+- master
+
+variables:
+  GOPATH: $(Agent.BuildDirectory)/go
+  PATH: $(Agent.BuildDirectory)/go/bin:$(Agent.BuildDirectory)/go/src/github.com/hyperledger/fabric-ca/build/tools:/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+  GOVER: 1.15.7
+
+jobs:
+- job: VerifyBuild
+  pool:
+    vmImage: ubuntu-16.04
+  steps:
+  - template: install_deps.yml
+  - checkout: self
+    path: 'go/src/github.com/hyperledger/fabric-ca'
+    displayName: Checkout Fabric CA Code
+  - script: make dist-all checks all-tests docs
+    displayName: Run Unit and Integration Tests
+
+- job: FVTTests
+  pool:
+    vmImage: ubuntu-16.04
+  steps:
+  - template: install_deps.yml
+  - checkout: self
+    path: 'go/src/github.com/hyperledger/fabric-ca'
+    displayName: Checkout Fabric CA Code
+  - script: make fvt-tests
+    displayName: Run FVT Tests
+
+- job: DocBuild
+  pool:
+    vmImage: ubuntu-16.04
+  container:
+    image: n42org/tox:3.4.0
+  steps:
+  - checkout: self
+    path: 'go/src/github.com/hyperledger/fabric-ca'
+    displayName: Checkout Fabric CA Code
+  - script: tox -edocs
+    displayName: Build Documentation
+  - publish: 'docs/_build/html'
+    displayName: Publish Documentation
