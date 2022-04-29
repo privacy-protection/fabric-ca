@@ -24,6 +24,7 @@ import (
 	"math/big"
 
 	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp"
+	"github.com/privacy-protection/cp-abe/core"
 )
 
 type ecdsaPublicKeyKeyDeriver struct{}
@@ -152,4 +153,31 @@ func (kd *aesPrivateKeyKeyDeriver) KeyDeriv(k bccsp.Key, opts bccsp.KeyDerivOpts
 	default:
 		return nil, fmt.Errorf("Unsupported 'KeyDerivOpts' provided [%v]", opts)
 	}
+}
+
+type cpabeMasterKeyDeriver struct {
+}
+
+func (kd *cpabeMasterKeyDeriver) KeyDeriv(k bccsp.Key, opts bccsp.KeyDerivOpts) (bccsp.Key, error) {
+	cpabeOpts, ok := opts.(*bccsp.CPABEDeriverOpts)
+	if !ok {
+		return nil, fmt.Errorf("invalid opts, must be *bccsp.CPABEDeriverOpts, but got %T", opts)
+	}
+	key, err := core.Generate(k.(*cpabeMasterKey).key, cpabeOpts.AttributeID)
+	if err != nil {
+		return nil, fmt.Errorf("generate cpabe key error, %v", err)
+	}
+	return &cpabePrivateKey{key}, nil
+}
+
+type cpabePrivateKeyDeriver struct {
+}
+
+func (kd *cpabePrivateKeyDeriver) KeyDeriv(k bccsp.Key, opts bccsp.KeyDerivOpts) (bccsp.Key, error) {
+	_, ok := opts.(*bccsp.CPABEDeriverOpts)
+	if !ok {
+		return nil, fmt.Errorf("invalid opts, must be *bccsp.CPABEDeriverOpts, but got %T", opts)
+	}
+	// TODO: zghh implement key deriver
+	panic("implement me.")
 }

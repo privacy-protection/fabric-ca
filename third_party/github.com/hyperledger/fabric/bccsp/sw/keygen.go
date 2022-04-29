@@ -24,6 +24,7 @@ import (
 	"fmt"
 
 	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp"
+	"github.com/privacy-protection/cp-abe/core"
 )
 
 type ecdsaKeyGenerator struct {
@@ -64,4 +65,15 @@ func (kg *rsaKeyGenerator) KeyGen(opts bccsp.KeyGenOpts) (bccsp.Key, error) {
 	}
 
 	return &rsaPrivateKey{lowLevelKey}, nil
+}
+
+type cpabeMasterKeyGenerator struct {
+}
+
+func (kg *cpabeMasterKeyGenerator) KeyGen(opts bccsp.KeyGenOpts) (bccsp.Key, error) {
+	lowLevelKey, err := core.Init()
+	if err != nil {
+		return nil, fmt.Errorf("Failed generating CPABE master key [%v]", err)
+	}
+	return &cpabeMasterKey{lowLevelKey}, nil
 }

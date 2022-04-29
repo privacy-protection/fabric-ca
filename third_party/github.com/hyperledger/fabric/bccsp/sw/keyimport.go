@@ -26,6 +26,7 @@ import (
 
 	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp"
 	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp/utils"
+	"github.com/privacy-protection/common/abe/protos/cpabe"
 )
 
 type aes256ImportKeyOptsKeyImporter struct{}
@@ -158,4 +159,34 @@ func (ki *x509PublicKeyImportOptsKeyImporter) KeyImport(raw interface{}, opts bc
 	default:
 		return nil, errors.New("Certificate's public key type not recognized. Supported keys: [ECDSA, RSA]")
 	}
+}
+
+type cpabePrivateKeyImportOptsKeyImporter struct{}
+
+func (*cpabePrivateKeyImportOptsKeyImporter) KeyImport(raw interface{}, opts bccsp.KeyImportOpts) (bccsp.Key, error) {
+	der, ok := raw.([]byte)
+	if !ok {
+		return nil, errors.New("[cpabePrivateKeyImportOptsKeyImporter] Invalid raw material. Expected byte array.")
+	}
+
+	if len(der) == 0 {
+		return nil, errors.New("[cpabePrivateKeyImportOptsKeyImporter] Invalid raw. It must not be nil.")
+	}
+
+	lowLevelKey, err := utils.DERToPrivateKey(der)
+	if err != nil {
+		return nil, fmt.Errorf("Failed converting PKIX to ECDSA public key [%s]", err)
+	}
+
+	cpabeMK, ok := lowLevelKey.(*cpabe.MasterKey)
+	if ok {
+		return &cpabeMasterKey{cpabeMK}, nil
+	}
+
+	cpabeSK, ok := lowLevelKey.(*cpabe.Key)
+	if ok {
+		return &cpabePrivateKey{cpabeSK}, nil
+	}
+
+	return nil, errors.New("Failed casting to CPABE private key. Invalid raw material.")
 }

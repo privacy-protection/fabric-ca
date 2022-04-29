@@ -16,6 +16,10 @@ limitations under the License.
 
 package bccsp
 
+import (
+	"github.com/privacy-protection/common/abe/protos/common"
+)
+
 const (
 	// ECDSA Elliptic Curve Digital Signature Algorithm (key gen, import, sign, verify),
 	// at default security level.
@@ -82,6 +86,9 @@ const (
 
 	// X509Certificate Label for X509 certificate related operation
 	X509Certificate = "X509Certificate"
+
+	// CPABE label for cpabe algorithm
+	CPABE = "CPABE"
 )
 
 // ECDSAKeyGenOpts contains options for ECDSA key generation.
@@ -319,4 +326,60 @@ func (opts *X509PublicKeyImportOpts) Algorithm() string {
 // false otherwise.
 func (opts *X509PublicKeyImportOpts) Ephemeral() bool {
 	return opts.Temporary
+}
+
+// CPABEKeyGenOpts contains options for cpabe key deriver
+type CPABEKeyGenOpts struct {
+	// Temporary represents whether only sotre the key into memory.
+	Temporary bool
+}
+
+// Algorithm returns the key generation algorithm identifier (to be used).
+func (opts *CPABEKeyGenOpts) Algorithm() string {
+	return CPABE
+}
+
+// Ephemeral returns true if the key to generate has to be ephemeral, false otherwise.
+func (opts *CPABEKeyGenOpts) Ephemeral() bool {
+	return opts.Temporary
+}
+
+// CPABEDeriverOpts contains options for cpabe key deriver
+type CPABEDeriverOpts struct {
+	// AttributeID represents the attributes in the key.
+	AttributeID []int32
+	// Temporary represents whether only sotre the key into memory.
+	Temporary bool
+}
+
+// Algorithm returns whether generate the private key from master key or private key.
+// If generate the key by master key, it will return "Generate", or else will return "Deriver".
+func (opts *CPABEDeriverOpts) Algorithm() string {
+	return CPABE
+}
+
+// Ephemeral returns true if the key to generate has to be ephemeral, false otherwise.
+func (opts *CPABEDeriverOpts) Ephemeral() bool {
+	return opts.Temporary
+}
+
+// CPABEKeyImportOpts contains options for cpabe key import
+type CPABEKeyImportOpts struct {
+	Temporary bool
+}
+
+// Algorithm returns the key importation algorithm identifier (to be used).
+func (opts *CPABEKeyImportOpts) Algorithm() string {
+	return CPABE
+}
+
+// Ephemeral returns true if the key to generate has to be ephemeral, false otherwise.
+func (opts *CPABEKeyImportOpts) Ephemeral() bool {
+	return opts.Temporary
+}
+
+// CPABEEcnryptOpts contains options for cpabe encrypt
+type CPABEEcnryptOpts struct {
+	// Tree represents the policy used in encryption.
+	Tree *common.Tree
 }

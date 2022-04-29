@@ -26,6 +26,9 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+
+	"github.com/golang/protobuf/proto"
+	"github.com/privacy-protection/common/abe/protos/cpabe"
 )
 
 // struct to hold info required for PKCS#8
@@ -50,6 +53,13 @@ var (
 )
 
 var oidPublicKeyECDSA = asn1.ObjectIdentifier{1, 2, 840, 10045, 2, 1}
+
+var (
+	// TODO: zghh use standard
+	oidCPABE           = asn1.ObjectIdentifier{1, 2, 3, 4, 5, 6}
+	oidCPABEMasterKey  = asn1.ObjectIdentifier{1, 1, 1, 1, 1}
+	oidCPABEPrivateKey = asn1.ObjectIdentifier{2, 2, 2, 2, 2}
+)
 
 func oidFromNamedCurve(curve elliptic.Curve) (asn1.ObjectIdentifier, bool) {
 	switch curve {
@@ -142,6 +152,54 @@ func PrivateKeyToPEM(privateKey interface{}, pwd []byte) ([]byte, error) {
 				Bytes: raw,
 			},
 		), nil
+	case *cpabe.MasterKey:
+		if k == nil {
+			return nil, errors.New("Invalid cpabe master key. It must be different from nil.")
+		}
+		raw, err := proto.Marshal(k)
+		if err != nil {
+			return nil, fmt.Errorf("marshal MasterKey error, %v", err)
+		}
+		var pkcs8Key pkcs8Info
+		pkcs8Key.Version = 0
+		pkcs8Key.PrivateKeyAlgorithm = make([]asn1.ObjectIdentifier, 2)
+		pkcs8Key.PrivateKeyAlgorithm[0] = oidCPABE
+		pkcs8Key.PrivateKeyAlgorithm[1] = oidCPABEMasterKey
+		pkcs8Key.PrivateKey = raw
+		pkcs8Bytes, err := asn1.Marshal(pkcs8Key)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling CPABE master key to asn1 [%s]", err)
+		}
+		return pem.EncodeToMemory(
+			&pem.Block{
+				Type:  "CPABE MASTER KEY",
+				Bytes: pkcs8Bytes,
+			},
+		), nil
+	case *cpabe.Key:
+		if k == nil {
+			return nil, errors.New("Invalid cpabe private key. It must be different from nil.")
+		}
+		raw, err := proto.Marshal(k)
+		if err != nil {
+			return nil, fmt.Errorf("marshal Key error, %v", err)
+		}
+		var pkcs8Key pkcs8Info
+		pkcs8Key.Version = 0
+		pkcs8Key.PrivateKeyAlgorithm = make([]asn1.ObjectIdentifier, 2)
+		pkcs8Key.PrivateKeyAlgorithm[0] = oidCPABE
+		pkcs8Key.PrivateKeyAlgorithm[1] = oidCPABEPrivateKey
+		pkcs8Key.PrivateKey = raw
+		pkcs8Bytes, err := asn1.Marshal(pkcs8Key)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling CPABE private key to asn1 [%s]", err)
+		}
+		return pem.EncodeToMemory(
+			&pem.Block{
+				Type:  "CPABE PRIVATE KEY",
+				Bytes: pkcs8Bytes,
+			},
+		), nil
 	default:
 		return nil, errors.New("Invalid key type. It must be *ecdsa.PrivateKey or *rsa.PrivateKey")
 	}
@@ -202,7 +260,27 @@ func DERToPrivateKey(der []byte) (key interface{}, err error) {
 		return
 	}
 
-	return nil, errors.New("Invalid key type. The DER must contain an rsa.PrivateKey or ecdsa.PrivateKey")
+	// CPABE key
+	var pkcs8Key pkcs8Info
+	if _, err = asn1.Unmarshal(der, &pkcs8Key); err == nil {
+		if len(pkcs8Key.PrivateKeyAlgorithm) >= 2 && pkcs8Key.PrivateKeyAlgorithm[0].Equal(oidCPABE) {
+			if pkcs8Key.PrivateKeyAlgorithm[1].Equal(oidCPABEMasterKey) {
+				mk := &cpabe.MasterKey{}
+				if err = proto.Unmarshal(pkcs8Key.PrivateKey, mk); err == nil {
+					key = mk
+					return
+				}
+			} else if pkcs8Key.PrivateKeyAlgorithm[1].Equal(oidCPABEPrivateKey) {
+				sk := &cpabe.Key{}
+				if err = proto.Unmarshal(pkcs8Key.PrivateKey, sk); err == nil {
+					key = sk
+					return
+				}
+			}
+		}
+	}
+
+	return nil, errors.New("Invalid key type. The DER must contain an rsa.PrivateKey, ecdsa.PrivateKey, cpabe.MasterKey or cpabe.PrivateKey.")
 }
 
 // PEMtoPrivateKey unmarshals a pem to private key

@@ -30,6 +30,7 @@ import (
 
 	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp"
 	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp/utils"
+	"github.com/privacy-protection/common/abe/protos/cpabe"
 )
 
 // NewFileBasedKeyStore instantiated a file-based key store at a given position.
@@ -139,6 +140,10 @@ func (ks *fileBasedKeyStore) GetKey(ski []byte) (bccsp.Key, error) {
 			return &ecdsaPrivateKey{key.(*ecdsa.PrivateKey)}, nil
 		case *rsa.PrivateKey:
 			return &rsaPrivateKey{key.(*rsa.PrivateKey)}, nil
+		case *cpabe.MasterKey:
+			return &cpabeMasterKey{key.(*cpabe.MasterKey)}, nil
+		case *cpabe.Key:
+			return &cpabePrivateKey{key.(*cpabe.Key)}, nil
 		default:
 			return nil, errors.New("Secret key type not recognized")
 		}
@@ -211,6 +216,22 @@ func (ks *fileBasedKeyStore) StoreKey(k bccsp.Key) (err error) {
 		err = ks.storeKey(hex.EncodeToString(k.SKI()), kk.privKey)
 		if err != nil {
 			return fmt.Errorf("Failed storing AES key [%s]", err)
+		}
+
+	case *cpabeMasterKey:
+		kk := k.(*cpabeMasterKey)
+
+		err = ks.storePrivateKey(hex.EncodeToString(k.SKI()), kk.key)
+		if err != nil {
+			return fmt.Errorf("Failed storing CPABE master key [%s]", err)
+		}
+
+	case *cpabePrivateKey:
+		kk := k.(*cpabePrivateKey)
+
+		err = ks.storePrivateKey(hex.EncodeToString(k.SKI()), kk.key)
+		if err != nil {
+			return fmt.Errorf("Failed storing CPABE private key [%s]", err)
 		}
 
 	default:
