@@ -15,7 +15,7 @@ import (
 	"testing"
 
 	"github.com/hyperledger/fabric-ca/lib"
-	"github.com/hyperledger/fabric-lib-go/healthz"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric-lib-go/healthz"
 
 	"github.com/stretchr/testify/assert"
 )

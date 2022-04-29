@@ -25,7 +25,7 @@ import (
 	"github.com/hyperledger/fabric-ca/lib/server/certificaterequest"
 	dbutil "github.com/hyperledger/fabric-ca/lib/server/db/util"
 	dbuser "github.com/hyperledger/fabric-ca/lib/server/user"
-	"github.com/hyperledger/fabric/common/metrics/metricsfakes"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/common/metrics/metricsfakes"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )

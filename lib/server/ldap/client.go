@@ -20,7 +20,7 @@ import (
 	causer "github.com/hyperledger/fabric-ca/lib/server/user"
 	"github.com/hyperledger/fabric-ca/lib/spi"
 	ctls "github.com/hyperledger/fabric-ca/lib/tls"
-	"github.com/hyperledger/fabric/bccsp"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	ldap "gopkg.in/ldap.v2"

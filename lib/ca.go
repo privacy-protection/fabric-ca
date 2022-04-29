@@ -47,7 +47,7 @@ import (
 	"github.com/hyperledger/fabric-ca/lib/server/user"
 	cadbuser "github.com/hyperledger/fabric-ca/lib/server/user"
 	"github.com/hyperledger/fabric-ca/lib/tls"
-	"github.com/hyperledger/fabric/bccsp"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp"
 	"github.com/pkg/errors"
 )
 
@@ -196,20 +196,24 @@ func (ca *CA) initKeyMaterial(renew bool) error {
 
 	keyFile := ca.Config.CA.Keyfile
 	certFile := ca.Config.CA.Certfile
+	cpabeKeyFile := ca.Config.CA.Cpabekeyfile
 
 	// If we aren't renewing and the key and cert files exist, do nothing
 	if !renew {
 		// If they both exist, the CA was already initialized
 		keyFileExists := util.FileExists(keyFile)
 		certFileExists := util.FileExists(certFile)
+		_ = util.FileExists(cpabeKeyFile)
 		if keyFileExists && certFileExists {
-			log.Info("The CA key and certificate files already exist")
+			log.Info("The CA key, CA CPABE key and certificate files already exist")
 			log.Infof("Key file location: %s", keyFile)
+			log.Infof("CAPBE Key file location: %s", cpabeKeyFile)
 			log.Infof("Certificate file location: %s", certFile)
 			err = ca.validateCertAndKey(certFile, keyFile)
 			if err != nil {
 				return errors.WithMessage(err, "Validation of certificate and key failed")
 			}
+			// TODO: zghh verify the capbe key
 			// Load CN from existing enrollment information and set CSR accordingly
 			// CN needs to be set, having a multi CA setup requires a unique CN and can't
 			// be left blank

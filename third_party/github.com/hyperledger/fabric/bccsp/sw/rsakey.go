@@ -24,7 +24,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/hyperledger/fabric/bccsp"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp"
 )
 
 // rsaPublicKey reflects the ASN.1 structure of a PKCS#1 public key.

@@ -26,7 +26,7 @@ import (
 	"github.com/hyperledger/fabric-ca/lib/server/db"
 	dbutil "github.com/hyperledger/fabric-ca/lib/server/db/util"
 	cadbuser "github.com/hyperledger/fabric-ca/lib/server/user"
-	"github.com/hyperledger/fabric/common/metrics/metricsfakes"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/common/metrics/metricsfakes"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"

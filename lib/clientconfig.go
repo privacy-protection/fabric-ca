@@ -25,7 +25,7 @@ import (
 	"github.com/hyperledger/fabric-ca/internal/pkg/api"
 	"github.com/hyperledger/fabric-ca/internal/pkg/util"
 	"github.com/hyperledger/fabric-ca/lib/tls"
-	"github.com/hyperledger/fabric/bccsp/factory"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp/factory"
 	"github.com/pkg/errors"
 )
 

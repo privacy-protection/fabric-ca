@@ -16,7 +16,7 @@ import (
 	proto "github.com/golang/protobuf/proto"
 	. "github.com/hyperledger/fabric-ca/lib/server/idemix"
 	"github.com/hyperledger/fabric-ca/lib/server/idemix/mocks"
-	"github.com/hyperledger/fabric/idemix"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/idemix"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )

@@ -4,8 +4,8 @@ package mocks
 import (
 	sync "sync"
 
-	healthz "github.com/hyperledger/fabric-lib-go/healthz"
-	metrics "github.com/hyperledger/fabric/common/metrics"
+	healthz "github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric-lib-go/healthz"
+	metrics "github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/common/metrics"
 )
 
 type OperationsServer struct {

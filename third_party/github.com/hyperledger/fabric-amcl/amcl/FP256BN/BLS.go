@@ -21,9 +21,7 @@ under the License.
 
 package FP256BN
 
-import "github.com/hyperledger/fabric-amcl/amcl"
-
-
+import "github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric-amcl/amcl"
 
 const BFS int = int(MODBYTES)
 const BGS int = int(MODBYTES)

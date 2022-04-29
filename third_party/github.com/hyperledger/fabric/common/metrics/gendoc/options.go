@@ -14,7 +14,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hyperledger/fabric/common/metrics"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/common/metrics"
 	"golang.org/x/tools/go/packages"
 )
 

@@ -16,8 +16,8 @@ import (
 
 	"github.com/cloudflare/cfssl/csr"
 	. "github.com/hyperledger/fabric-ca/internal/pkg/util"
-	"github.com/hyperledger/fabric/bccsp"
-	"github.com/hyperledger/fabric/bccsp/factory"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp/factory"
 	"github.com/stretchr/testify/assert"
 )
 

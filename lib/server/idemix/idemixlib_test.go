@@ -9,10 +9,10 @@ package idemix_test
 import (
 	"testing"
 
-	"github.com/hyperledger/fabric-amcl/amcl/FP256BN"
 	"github.com/hyperledger/fabric-ca/internal/pkg/util"
 	"github.com/hyperledger/fabric-ca/lib/server/idemix"
-	fabidemix "github.com/hyperledger/fabric/idemix"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric-amcl/amcl/FP256BN"
+	fabidemix "github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/idemix"
 )
 
 func TestIdemixPanic(t *testing.T) {

@@ -9,9 +9,9 @@ package idemix
 import (
 	"crypto/ecdsa"
 
-	"github.com/hyperledger/fabric-amcl/amcl"
-	fp256bn "github.com/hyperledger/fabric-amcl/amcl/FP256BN"
-	"github.com/hyperledger/fabric/idemix"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric-amcl/amcl"
+	fp256bn "github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric-amcl/amcl/FP256BN"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/idemix"
 	"github.com/pkg/errors"
 )
 

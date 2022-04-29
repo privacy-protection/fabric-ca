@@ -119,6 +119,8 @@ ca:
   name:
   # Key file (is only used to import a private key into BCCSP)
   keyfile:
+  # CPABE Key file
+  cpabekeyfile:
   # Certificate file (default: ca-cert.pem)
   certfile:
   # Chain file

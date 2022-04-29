@@ -11,3 +11,9 @@ require (
 	golang.org/x/lint v0.0.0-20190909230951-414d861bb4ac
 	golang.org/x/tools v0.0.0-20200131233409-575de47986ce
 )
+
+replace (
+	github.com/hyperledger/fabric-ca => ../
+    github.com/privacy-protection/common => ../../common
+    github.com/privacy-protection/cp-abe => ../../cp-abe
+)

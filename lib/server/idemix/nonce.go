@@ -11,10 +11,10 @@ import (
 	"time"
 
 	"github.com/cloudflare/cfssl/log"
-	fp256bn "github.com/hyperledger/fabric-amcl/amcl/FP256BN"
 	"github.com/hyperledger/fabric-ca/internal/pkg/util"
 	"github.com/hyperledger/fabric-ca/lib/server/db"
-	"github.com/hyperledger/fabric/idemix"
+	fp256bn "github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric-amcl/amcl/FP256BN"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/idemix"
 	"github.com/pkg/errors"
 )
 
