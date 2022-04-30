@@ -11,9 +11,9 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 
-	"github.com/cloudflare/cfssl/log"
 	"github.com/hyperledger/fabric-ca/internal/pkg/util"
 	"github.com/hyperledger/fabric-ca/lib/server/db"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/log"
 	fp256bn "github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric-amcl/amcl/FP256BN"
 	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/idemix"
 	"github.com/jmoiron/sqlx"

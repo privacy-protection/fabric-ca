@@ -15,11 +15,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudflare/cfssl/api"
-	"github.com/cloudflare/cfssl/auth"
-	"github.com/cloudflare/cfssl/errors"
-	"github.com/cloudflare/cfssl/info"
-	"github.com/cloudflare/cfssl/log"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/api"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/auth"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/errors"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/info"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/log"
 )
 
 // A server points to a single remote CFSSL instance.

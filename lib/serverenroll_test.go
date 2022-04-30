@@ -7,14 +7,15 @@ SPDX-License-Identifier: Apache-2.0
 package lib
 
 import (
-	"github.com/cloudflare/cfssl/signer"
-	"github.com/hyperledger/fabric-ca/internal/pkg/api"
-	"github.com/hyperledger/fabric-ca/internal/pkg/util"
-	dbuser "github.com/hyperledger/fabric-ca/lib/server/user"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/hyperledger/fabric-ca/internal/pkg/api"
+	"github.com/hyperledger/fabric-ca/internal/pkg/util"
+	dbuser "github.com/hyperledger/fabric-ca/lib/server/user"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/signer"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestStateUpdate(t *testing.T) {

@@ -11,10 +11,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/cloudflare/cfssl/log"
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-ca/internal/pkg/api"
 	"github.com/hyperledger/fabric-ca/internal/pkg/util"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/log"
 	fp256bn "github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric-amcl/amcl/FP256BN"
 	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp"
 	idemix "github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/idemix"

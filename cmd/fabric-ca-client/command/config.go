@@ -15,13 +15,13 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/cloudflare/cfssl/csr"
-	"github.com/cloudflare/cfssl/log"
 	"github.com/hyperledger/fabric-ca/internal/pkg/api"
 	calog "github.com/hyperledger/fabric-ca/internal/pkg/log"
 	"github.com/hyperledger/fabric-ca/internal/pkg/util"
 	"github.com/hyperledger/fabric-ca/lib"
 	"github.com/hyperledger/fabric-ca/lib/attr"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/csr"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/log"
 	"github.com/pkg/errors"
 )
 

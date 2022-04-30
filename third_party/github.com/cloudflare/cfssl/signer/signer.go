@@ -16,11 +16,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudflare/cfssl/certdb"
-	"github.com/cloudflare/cfssl/config"
-	"github.com/cloudflare/cfssl/csr"
-	cferr "github.com/cloudflare/cfssl/errors"
-	"github.com/cloudflare/cfssl/info"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/certdb"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/config"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/csr"
+	cferr "github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/errors"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/info"
 )
 
 // Subject contains the information that should be used to override the

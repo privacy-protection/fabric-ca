@@ -5,8 +5,8 @@ import (
 	"errors"
 	"io/ioutil"
 
-	cferr "github.com/cloudflare/cfssl/errors"
-	"github.com/cloudflare/cfssl/log"
+	cferr "github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/errors"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/log"
 
 	"github.com/jmoiron/sqlx"
 )

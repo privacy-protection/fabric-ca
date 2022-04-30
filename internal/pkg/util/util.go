@@ -30,8 +30,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cfssl/log"
 	"github.com/hyperledger/fabric-ca/lib/caerrors"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/log"
 	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"

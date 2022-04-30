@@ -9,7 +9,7 @@ package log
 import (
 	"strings"
 
-	"github.com/cloudflare/cfssl/log"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/log"
 	"github.com/pkg/errors"
 )
 

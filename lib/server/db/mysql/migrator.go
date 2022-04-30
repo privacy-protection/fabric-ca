@@ -9,10 +9,10 @@ package mysql
 import (
 	"strings"
 
-	"github.com/cloudflare/cfssl/log"
 	"github.com/hyperledger/fabric-ca/lib/server/db"
 	"github.com/hyperledger/fabric-ca/lib/server/db/util"
 	"github.com/hyperledger/fabric-ca/lib/server/user"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/log"
 	"github.com/pkg/errors"
 )
 

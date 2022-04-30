@@ -26,8 +26,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cfssl/csr"
-	"github.com/cloudflare/cfssl/log"
 	"github.com/hyperledger/fabric-ca/internal/pkg/api"
 	"github.com/hyperledger/fabric-ca/internal/pkg/util"
 	"github.com/hyperledger/fabric-ca/lib"
@@ -37,6 +35,8 @@ import (
 	"github.com/hyperledger/fabric-ca/lib/server/db"
 	"github.com/hyperledger/fabric-ca/lib/server/db/sqlite"
 	cadbuser "github.com/hyperledger/fabric-ca/lib/server/user"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/csr"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/log"
 	"github.com/stretchr/testify/assert"
 )
 

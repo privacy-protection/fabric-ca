@@ -25,8 +25,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cfssl/certdb"
-	"github.com/cloudflare/cfssl/csr"
 	"github.com/hyperledger/fabric-ca/internal/pkg/api"
 	"github.com/hyperledger/fabric-ca/internal/pkg/util"
 	. "github.com/hyperledger/fabric-ca/lib"
@@ -36,6 +34,8 @@ import (
 	"github.com/hyperledger/fabric-ca/lib/server/operations"
 	cadbuser "github.com/hyperledger/fabric-ca/lib/server/user"
 	libtls "github.com/hyperledger/fabric-ca/lib/tls"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/certdb"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/csr"
 	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp/factory"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"

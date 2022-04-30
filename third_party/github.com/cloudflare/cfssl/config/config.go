@@ -14,11 +14,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudflare/cfssl/auth"
-	cferr "github.com/cloudflare/cfssl/errors"
-	"github.com/cloudflare/cfssl/helpers"
-	"github.com/cloudflare/cfssl/log"
-	ocspConfig "github.com/cloudflare/cfssl/ocsp/config"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/auth"
+	cferr "github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/errors"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/helpers"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/log"
+	ocspConfig "github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/ocsp/config"
 	"github.com/zmap/zlint/lints"
 )
 

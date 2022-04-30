@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudflare/cfssl/auth"
-	"github.com/cloudflare/cfssl/info"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/auth"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/info"
 )
 
 // Strategy is the means by which the server to use as a remote should

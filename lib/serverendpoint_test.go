@@ -13,8 +13,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/cloudflare/cfssl/api"
 	"github.com/hyperledger/fabric-ca/lib/caerrors"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/api"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -11,8 +11,8 @@ import (
 	"database/sql"
 	"strings"
 
-	"github.com/cloudflare/cfssl/log"
 	"github.com/hyperledger/fabric-ca/lib/server/db"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/log"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 )

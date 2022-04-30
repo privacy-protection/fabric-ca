@@ -5,13 +5,13 @@ import (
 	"crypto/x509"
 	"net/http"
 
-	"github.com/cloudflare/cfssl/certdb"
-	"github.com/cloudflare/cfssl/config"
-	cferr "github.com/cloudflare/cfssl/errors"
-	"github.com/cloudflare/cfssl/info"
-	"github.com/cloudflare/cfssl/signer"
-	"github.com/cloudflare/cfssl/signer/local"
-	"github.com/cloudflare/cfssl/signer/remote"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/certdb"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/config"
+	cferr "github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/errors"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/info"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/signer"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/signer/local"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/signer/remote"
 )
 
 // Signer represents a universal signer which is both local and remote

@@ -12,7 +12,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/cloudflare/cfssl/log"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/log"
 	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp/factory"
 	"github.com/pkg/errors"
 )

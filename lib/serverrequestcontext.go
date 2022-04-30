@@ -16,10 +16,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/cloudflare/cfssl/config"
-	"github.com/cloudflare/cfssl/log"
-	"github.com/cloudflare/cfssl/revoke"
-	"github.com/cloudflare/cfssl/signer"
 	gmux "github.com/gorilla/mux"
 	"github.com/hyperledger/fabric-ca/internal/pkg/api"
 	"github.com/hyperledger/fabric-ca/internal/pkg/util"
@@ -29,6 +25,10 @@ import (
 	cr "github.com/hyperledger/fabric-ca/lib/server/certificaterequest"
 	"github.com/hyperledger/fabric-ca/lib/server/idemix"
 	"github.com/hyperledger/fabric-ca/lib/server/user"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/config"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/log"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/revoke"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/signer"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
 )

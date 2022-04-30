@@ -6,13 +6,13 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/cloudflare/cfssl/api/client"
-	"github.com/cloudflare/cfssl/certdb"
-	"github.com/cloudflare/cfssl/config"
-	cferr "github.com/cloudflare/cfssl/errors"
-	"github.com/cloudflare/cfssl/helpers"
-	"github.com/cloudflare/cfssl/info"
-	"github.com/cloudflare/cfssl/signer"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/api/client"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/certdb"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/config"
+	cferr "github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/errors"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/helpers"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/info"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/signer"
 )
 
 // A Signer represents a CFSSL instance running as signing server.

@@ -12,8 +12,8 @@ import (
 	"net/http"
 	"reflect"
 
-	cfsslapi "github.com/cloudflare/cfssl/api"
-	"github.com/cloudflare/cfssl/log"
+	cfsslapi "github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/api"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/log"
 	"github.com/pkg/errors"
 )
 

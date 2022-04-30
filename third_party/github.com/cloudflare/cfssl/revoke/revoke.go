@@ -21,8 +21,8 @@ import (
 
 	"golang.org/x/crypto/ocsp"
 
-	"github.com/cloudflare/cfssl/helpers"
-	"github.com/cloudflare/cfssl/log"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/helpers"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/log"
 )
 
 // HardFail determines whether the failure to check the revocation

@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/cloudflare/cfssl/log"
 	"github.com/hyperledger/fabric-ca/internal/pkg/api"
 	"github.com/hyperledger/fabric-ca/internal/pkg/util"
 	"github.com/hyperledger/fabric-ca/lib/attr"
@@ -20,6 +19,7 @@ import (
 	"github.com/hyperledger/fabric-ca/lib/server/user"
 	cadbuser "github.com/hyperledger/fabric-ca/lib/server/user"
 	"github.com/hyperledger/fabric-ca/lib/spi"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/log"
 	"github.com/jmoiron/sqlx"
 	"github.com/kisielk/sqlstruct"
 	"github.com/pkg/errors"

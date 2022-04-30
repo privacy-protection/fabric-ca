@@ -18,7 +18,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/google/certificate-transparency-go"
+	ct "github.com/google/certificate-transparency-go"
 	cttls "github.com/google/certificate-transparency-go/tls"
 	ctx509 "github.com/google/certificate-transparency-go/x509"
 	"golang.org/x/crypto/ocsp"
@@ -26,10 +26,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudflare/cfssl/crypto/pkcs7"
-	cferr "github.com/cloudflare/cfssl/errors"
-	"github.com/cloudflare/cfssl/helpers/derhelpers"
-	"github.com/cloudflare/cfssl/log"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/crypto/pkcs7"
+	cferr "github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/errors"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/helpers/derhelpers"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/log"
 	"golang.org/x/crypto/pkcs12"
 )
 

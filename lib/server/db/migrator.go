@@ -7,8 +7,8 @@ SPDX-License-Identifier: Apache-2.0
 package db
 
 import (
-	"github.com/cloudflare/cfssl/log"
 	"github.com/hyperledger/fabric-ca/lib/server/db/util"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/log"
 )
 
 //go:generate counterfeiter -o mocks/migrator.go -fake-name Migrator . Migrator

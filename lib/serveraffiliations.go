@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/cloudflare/cfssl/log"
 	"github.com/hyperledger/fabric-ca/internal/pkg/api"
 	"github.com/hyperledger/fabric-ca/lib/attr"
 	"github.com/hyperledger/fabric-ca/lib/caerrors"
@@ -20,6 +19,7 @@ import (
 	"github.com/hyperledger/fabric-ca/lib/server/user"
 	cadbuser "github.com/hyperledger/fabric-ca/lib/server/user"
 	"github.com/hyperledger/fabric-ca/lib/spi"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/log"
 	"github.com/pkg/errors"
 )
 

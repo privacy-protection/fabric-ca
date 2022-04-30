@@ -33,8 +33,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cloudflare/cfssl/config"
 	"github.com/hyperledger/fabric-ca/internal/pkg/util"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/config"
 )
 
 const (
