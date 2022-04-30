@@ -2,6 +2,8 @@ package sw
 
 import (
 	"crypto/sha256"
+	"encoding/binary"
+	"errors"
 	"fmt"
 
 	"github.com/golang/protobuf/proto"
@@ -16,11 +18,7 @@ type cpabePrivateKey struct {
 // Bytes converts this key to its byte representation,
 // if this operation is allowed.
 func (k *cpabePrivateKey) Bytes() (raw []byte, err error) {
-	raw, err = proto.Marshal(k.key)
-	if err != nil {
-		return nil, fmt.Errorf("Failed marshalling cpabe key [%s]", err)
-	}
-	return
+	return nil, errors.New("Not supported.")
 }
 
 // SKI returns the subject key identifier of this key.
@@ -30,14 +28,20 @@ func (k *cpabePrivateKey) SKI() []byte {
 	}
 
 	// Marshall
-	raw, err := proto.Marshal(k.key)
+	raw, err := proto.Marshal(k.key.Param)
 	if err != nil {
 		panic(err)
+	}
+	attrLen := len(k.key.Attribute)
+	attrBytes := make([]byte, attrLen<<2)
+	for i, attr := range k.key.Attribute {
+		binary.BigEndian.PutUint32(attrBytes[i<<2:], uint32(attr))
 	}
 
 	// Hash it
 	hash := sha256.New()
 	hash.Write(raw)
+	hash.Write(attrBytes)
 	return hash.Sum(nil)
 }
 
@@ -66,11 +70,7 @@ type cpabeMasterKey struct {
 // Bytes converts this key to its byte representation,
 // if this operation is allowed.
 func (k *cpabeMasterKey) Bytes() (raw []byte, err error) {
-	raw, err = proto.Marshal(k.key)
-	if err != nil {
-		return nil, fmt.Errorf("Failed marshalling cpabe master key [%s]", err)
-	}
-	return
+	return nil, errors.New("Not supported.")
 }
 
 // SKI returns the subject key identifier of this key.
@@ -80,7 +80,7 @@ func (k *cpabeMasterKey) SKI() []byte {
 	}
 
 	// Marshall
-	raw, err := proto.Marshal(k.key)
+	raw, err := proto.Marshal(k.key.Param)
 	if err != nil {
 		panic(err)
 	}

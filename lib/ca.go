@@ -203,17 +203,15 @@ func (ca *CA) initKeyMaterial(renew bool) error {
 		// If they both exist, the CA was already initialized
 		keyFileExists := util.FileExists(keyFile)
 		certFileExists := util.FileExists(certFile)
-		_ = util.FileExists(cpabeKeyFile)
+		cpabeKeyFileExists := util.FileExists(cpabeKeyFile)
 		if keyFileExists && certFileExists {
-			log.Info("The CA key, CA CPABE key and certificate files already exist")
+			log.Info("The CA key and certificate files already exist")
 			log.Infof("Key file location: %s", keyFile)
-			log.Infof("CAPBE Key file location: %s", cpabeKeyFile)
 			log.Infof("Certificate file location: %s", certFile)
 			err = ca.validateCertAndKey(certFile, keyFile)
 			if err != nil {
 				return errors.WithMessage(err, "Validation of certificate and key failed")
 			}
-			// TODO: zghh verify the capbe key
 			// Load CN from existing enrollment information and set CSR accordingly
 			// CN needs to be set, having a multi CA setup requires a unique CN and can't
 			// be left blank
@@ -222,6 +220,11 @@ func (ca *CA) initKeyMaterial(renew bool) error {
 				return err
 			}
 			return nil
+		}
+
+		if cpabeKeyFileExists && certFileExists {
+			// TODO: zghh verify the capbe key
+			log.Infof("CPABE Key file location: %s", cpabeKeyFile)
 		}
 
 		// If key file does not exist but certFile does, key file is probably
@@ -269,6 +272,7 @@ func (ca *CA) getCACert() (cert []byte, err error) {
 	if ca.Config.Intermediate.ParentServer.URL != "" {
 		// This is an intermediate CA, so call the parent fabric-ca-server
 		// to get the cert
+		// TODO: zghh request for derivering the cpabe key
 		log.Debugf("Getting CA cert; parent server URL is %s", util.GetMaskedURL(ca.Config.Intermediate.ParentServer.URL))
 		clientCfg := ca.Config.Client
 		if clientCfg == nil {
@@ -349,6 +353,11 @@ func (ca *CA) getCACert() (cert []byte, err error) {
 		log.Debugf("Root CA certificate request: %+v", req)
 		// Generate the key/signer
 		_, cspSigner, err := util.BCCSPKeyRequestGenerate(&req, ca.csp)
+		if err != nil {
+			return nil, err
+		}
+		// Generate the cpabe master key
+		_, req.CA.CPABEParams, err = util.CPABEMasterKeyGenerate(ca.csp)
 		if err != nil {
 			return nil, err
 		}

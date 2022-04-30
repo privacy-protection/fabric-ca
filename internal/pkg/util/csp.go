@@ -206,6 +206,26 @@ func BCCSPKeyRequestGenerate(req *csr.CertificateRequest, myCSP bccsp.BCCSP) (bc
 	return key, cspSigner, nil
 }
 
+// CPABEMasterKeyGenerate generates the cpabe master key, and returns the key and the params
+func CPABEMasterKeyGenerate(myCSP bccsp.BCCSP) (bccsp.Key, string, error) {
+	// Generate the cpabe master key
+	k, err := myCSP.KeyGen(&bccsp.CPABEKeyGenOpts{Temporary: false})
+	if err != nil {
+		return nil, "", fmt.Errorf("bccsp generate cpabe master key error, %v", err)
+	}
+	// Get the cpabe params
+	params, err := k.PublicKey()
+	if err != nil {
+		return nil, "", fmt.Errorf("get the cpabe params from master key error, %v", err)
+	}
+	// Marshal the cpabe params
+	paramsBytes, err := params.Bytes()
+	if err != nil {
+		return nil, "", fmt.Errorf("marshal cpabe params error, %v", err)
+	}
+	return k, hex.EncodeToString(paramsBytes), nil
+}
+
 // ImportBCCSPKeyFromPEM attempts to create a private BCCSP key from a pem file keyFile
 func ImportBCCSPKeyFromPEM(keyFile string, myCSP bccsp.BCCSP, temporary bool) (bccsp.Key, error) {
 	keyBuff, err := ioutil.ReadFile(keyFile)

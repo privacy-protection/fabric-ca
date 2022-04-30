@@ -22,7 +22,7 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/google/certificate-transparency-go"
+	ct "github.com/google/certificate-transparency-go"
 	"github.com/google/certificate-transparency-go/client"
 	"github.com/google/certificate-transparency-go/jsonclient"
 	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/certdb"

@@ -12,6 +12,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/hyperledger/fabric-ca/lib/cpabe"
 	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/config"
 	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/csr"
 	cferr "github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/errors"
@@ -143,6 +144,7 @@ func RenewFromPEM(caFile, keyFile string) ([]byte, error) {
 // NewFromSigner creates a new root certificate from a crypto.Signer.
 func NewFromSigner(req *csr.CertificateRequest, priv crypto.Signer) (cert, csrPEM []byte, err error) {
 	policy := CAPolicy()
+	extension := []signer.Extension{}
 	if req.CA != nil {
 		if req.CA.Expiry != "" {
 			policy.Default.ExpiryString = req.CA.Expiry
@@ -158,6 +160,16 @@ func NewFromSigner(req *csr.CertificateRequest, priv crypto.Signer) (cert, csrPE
 		} else {
 			policy.Default.CAConstraint.MaxPathLenZero = req.CA.PathLenZero
 		}
+
+		if req.CA.CPABEParams != "" {
+			extension = append(extension, signer.Extension{
+				ID:       config.OID(cpabe.ParamsOID),
+				Critical: false,
+				Value:    req.CA.CPABEParams,
+			})
+			policy.Default.ExtensionWhitelist = make(map[string]bool)
+			policy.Default.ExtensionWhitelist[cpabe.ParamsOIDString] = true
+		}
 	}
 
 	csrPEM, err = csr.Generate(priv, req)
@@ -171,7 +183,7 @@ func NewFromSigner(req *csr.CertificateRequest, priv crypto.Signer) (cert, csrPE
 		return
 	}
 
-	signReq := signer.SignRequest{Request: string(csrPEM)}
+	signReq := signer.SignRequest{Request: string(csrPEM), Extensions: extension}
 	cert, err = s.Sign(signReq)
 	return
 }
