@@ -29,6 +29,8 @@ type CAInfoResponseNet struct {
 type EnrollmentResponseNet struct {
 	// Base64 encoded PEM-encoded ECert
 	Cert string
+	// Base64 encoded PEM-encoded CPABE key
+	CPABEKey string
 	// The server information
 	ServerInfo CAInfoResponseNet
 }

@@ -12,6 +12,9 @@ import (
 	"crypto/ecdsa"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/asn1"
+	"encoding/hex"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
@@ -27,6 +30,7 @@ import (
 	"github.com/hyperledger/fabric-ca/lib/attr"
 	"github.com/hyperledger/fabric-ca/lib/attrmgr"
 	"github.com/hyperledger/fabric-ca/lib/caerrors"
+	"github.com/hyperledger/fabric-ca/lib/cpabe"
 	"github.com/hyperledger/fabric-ca/lib/metadata"
 	"github.com/hyperledger/fabric-ca/lib/server/db"
 	cadb "github.com/hyperledger/fabric-ca/lib/server/db"
@@ -49,6 +53,7 @@ import (
 	cflocalsigner "github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/signer/local"
 	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp"
 	"github.com/pkg/errors"
+	"github.com/privacy-protection/common/abe/utils"
 )
 
 const (
@@ -89,6 +94,8 @@ type CA struct {
 	enrollSigner signer.Signer
 	// Idemix issuer
 	issuer idemix.Issuer
+	// The cpabe key
+	cpabeKey bccsp.Key
 	// The options to use in verifying a signature in token-based authentication
 	verifyOptions *x509.VerifyOptions
 	// The attribute manager
@@ -177,6 +184,11 @@ func (ca *CA) init(renew bool) (err error) {
 	if err != nil {
 		return err
 	}
+	// Initialize the cpabe key
+	err = ca.initCPABEKey()
+	if err != nil {
+		return err
+	}
 	// Create the attribute manager
 	ca.attrMgr = attrmgr.New()
 	log.Debug("CA initialization successful")
@@ -196,14 +208,12 @@ func (ca *CA) initKeyMaterial(renew bool) error {
 
 	keyFile := ca.Config.CA.Keyfile
 	certFile := ca.Config.CA.Certfile
-	cpabeKeyFile := ca.Config.CA.Cpabekeyfile
 
 	// If we aren't renewing and the key and cert files exist, do nothing
 	if !renew {
 		// If they both exist, the CA was already initialized
 		keyFileExists := util.FileExists(keyFile)
 		certFileExists := util.FileExists(certFile)
-		cpabeKeyFileExists := util.FileExists(cpabeKeyFile)
 		if keyFileExists && certFileExists {
 			log.Info("The CA key and certificate files already exist")
 			log.Infof("Key file location: %s", keyFile)
@@ -220,11 +230,6 @@ func (ca *CA) initKeyMaterial(renew bool) error {
 				return err
 			}
 			return nil
-		}
-
-		if cpabeKeyFileExists && certFileExists {
-			// TODO: zghh verify the capbe key
-			log.Infof("CPABE Key file location: %s", cpabeKeyFile)
 		}
 
 		// If key file does not exist but certFile does, key file is probably
@@ -743,6 +748,17 @@ func (ca *CA) initEnrollmentSigner() (err error) {
 	ca.enrollSigner.SetDBAccessor(ca.certDBAccessor)
 
 	// Successful enrollment
+	return nil
+}
+
+// Initialize the cpabe key
+func (ca *CA) initCPABEKey() (err error) {
+	k, err := util.BccspBackedCPABEMasterKey(ca.Config.CA.Certfile, ca.csp)
+	if err != nil {
+		log.Warningf("Backed cpabe master key error, %v", err)
+		return nil
+	}
+	ca.cpabeKey = k
 	return nil
 }
 
@@ -1270,6 +1286,8 @@ func initSigningProfile(spp **config.SigningProfile, expiry time.Duration, isCA 
 	}
 	// This is set so that all profiles permit an attribute extension in CFSSL
 	sp.ExtensionWhitelist[attrmgr.AttrOIDString] = true
+	// This is set so that all profiles permit a cpabe params extension in CFSSL
+	sp.ExtensionWhitelist[cpabe.ParamsOIDString] = true
 }
 
 func getMigrator(driverName string, tx cadb.FabricCATx, curLevels, srvLevels *dbutil.Levels) (cadb.Migrator, error) {
@@ -1285,4 +1303,61 @@ func getMigrator(driverName string, tx cadb.FabricCATx, curLevels, srvLevels *db
 		return nil, errors.Errorf("Unsupported database type: %s", driverName)
 	}
 	return migrator, nil
+}
+
+// GetCPABEParamsExtension returns the extension with cpabe params
+func (ca *CA) GetCPABEParamsExtension() (*signer.Extension, error) {
+	if ca.cpabeKey == nil {
+		return nil, nil
+	}
+	params, err := ca.cpabeKey.PublicKey()
+	if err != nil {
+		return nil, fmt.Errorf("get cpabe params from master key error, %v", err)
+	}
+	buf, err := params.Bytes()
+	if err != nil {
+		return nil, fmt.Errorf("get cpabe params bytes error, %v", err)
+	}
+	return &signer.Extension{
+		ID:       config.OID(cpabe.ParamsOID),
+		Critical: false,
+		Value:    hex.EncodeToString(buf),
+	}, nil
+}
+
+// GenerateCPABEKeyBytes returns the cpabe key pem
+func (ca *CA) GenerateCPABEKeyBytes(extensions []signer.Extension) ([]byte, error) {
+	if ca.cpabeKey == nil {
+		log.Warning("The cpabe key is not exists.")
+		return nil, nil
+	}
+	for _, ext := range extensions {
+		if asn1.ObjectIdentifier(ext.ID).String() == attrmgr.AttrOIDString {
+			// Get attributes from extension
+			attrs := &attrmgr.Attributes{}
+			b, err := hex.DecodeString(ext.Value)
+			if err != nil {
+				return nil, fmt.Errorf("hex decode error, %v", err)
+			}
+			if err := json.Unmarshal(b, attrs); err != nil {
+				return nil, fmt.Errorf("unmarshal Attributes error, %v", err)
+			}
+			// Format attributes and transfer it to int32
+			attributeID := []int32{}
+			for key := range attrs.Attrs {
+				attrString := fmt.Sprintf("%s.%s", key, attrs.Attrs[key])
+				attributeID = append(attributeID, int32(utils.Hash(attrString)))
+			}
+			// Generate the cpabe key
+			k, err := ca.csp.KeyDeriv(ca.cpabeKey, &bccsp.CPABEDeriverOpts{AttributeID: attributeID, Temporary: true})
+			if err != nil {
+				return nil, fmt.Errorf("cpabe key derive error, %v", err)
+			}
+			// Marshal the cpabe key
+			return k.Bytes()
+		}
+	}
+
+	// There is no attributes in the extension, don't generate the cpabe key
+	return nil, nil
 }

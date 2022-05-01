@@ -11,6 +11,7 @@ import (
 	"crypto"
 	"encoding/hex"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -343,6 +344,22 @@ func (c *Client) handleX509Enroll(req *api.EnrollmentRequest) (*EnrollmentRespon
 	err = c.SendReq(post, &result)
 	if err != nil {
 		return nil, err
+	}
+
+	// Store the cpabe key
+	if result.CPABEKey != "" {
+		cpabeKeyBytes, err := util.B64Decode(result.CPABEKey)
+		if err != nil {
+			return nil, errors.WithMessage(err, "Decode cpabe key error")
+		}
+		block, _ := pem.Decode(cpabeKeyBytes)
+		if block == nil {
+			return nil, errors.WithMessage(err, "Decode cpabe key pem error")
+		}
+		_, err = c.csp.KeyImport(block.Bytes, &bccsp.CPABEKeyImportOpts{Temporary: false})
+		if err != nil {
+			return nil, errors.WithMessage(err, "Import cpabe key error")
+		}
 	}
 
 	// Create the enrollment response

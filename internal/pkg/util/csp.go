@@ -19,6 +19,7 @@ import (
 	"strings"
 	_ "time" // for ocspSignerFromConfig
 
+	"github.com/hyperledger/fabric-ca/lib/cpabe"
 	_ "github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/cli" // for ocspSignerFromConfig
 	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/config"
 	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/csr"
@@ -101,6 +102,38 @@ func BccspBackedSigner(caFile, keyFile string, policy *config.Signing, csp bccsp
 		return nil, errors.Wrap(err, "Failed to create new signer")
 	}
 	return signer, nil
+}
+
+// BccspBackedCPABEMasterKey attempts to get the master key using csp bccsp.BCCSP.
+func BccspBackedCPABEMasterKey(certFile string, csp bccsp.BCCSP) (bccsp.Key, error) {
+	// Load cert file
+	certBytes, err := ioutil.ReadFile(certFile)
+	if err != nil {
+		return nil, fmt.Errorf("read file error, %v", err)
+	}
+	// Parse certificate
+	parsedCert, err := helpers.ParseCertificatePEM(certBytes)
+	if err != nil {
+		return nil, fmt.Errorf("parse certificate error, %v", err)
+	}
+	// Get cpabe params
+	var paramsBytes []byte
+	for _, extensions := range parsedCert.Extensions {
+		if extensions.Id.String() == cpabe.ParamsOIDString {
+			paramsBytes = extensions.Value
+		}
+	}
+	if paramsBytes == nil {
+		log.Warningf("The certificate in [%s] not support cpabe", certFile)
+		return nil, nil
+	}
+	// Import the cpabe params
+	// Get the signer from the cert
+	params, err := csp.KeyImport(paramsBytes, &bccsp.CPABEParamsImportOpts{Temporary: true})
+	if err != nil {
+		return nil, fmt.Errorf("import params error, %v", err)
+	}
+	return csp.GetKey(params.SKI())
 }
 
 // getBCCSPKeyOpts generates a key as specified in the request.

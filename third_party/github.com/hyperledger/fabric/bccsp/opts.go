@@ -378,6 +378,21 @@ func (opts *CPABEKeyImportOpts) Ephemeral() bool {
 	return opts.Temporary
 }
 
+// CPABEParamsImportOpts contains options for cpabe params import
+type CPABEParamsImportOpts struct {
+	Temporary bool
+}
+
+// Algorithm returns the key importation algorithm identifier (to be used).
+func (opts *CPABEParamsImportOpts) Algorithm() string {
+	return CPABE
+}
+
+// Ephemeral returns true if the key to generate has to be ephemeral, false otherwise.
+func (opts *CPABEParamsImportOpts) Ephemeral() bool {
+	return opts.Temporary
+}
+
 // CPABEEcnryptOpts contains options for cpabe encrypt
 type CPABEEcnryptOpts struct {
 	// Tree represents the policy used in encryption.

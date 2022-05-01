@@ -3,11 +3,11 @@ package sw
 import (
 	"crypto/sha256"
 	"encoding/binary"
-	"errors"
 	"fmt"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp/utils"
 	"github.com/privacy-protection/common/abe/protos/cpabe"
 )
 
@@ -15,10 +15,9 @@ type cpabePrivateKey struct {
 	key *cpabe.Key
 }
 
-// Bytes converts this key to its byte representation,
-// if this operation is allowed.
-func (k *cpabePrivateKey) Bytes() (raw []byte, err error) {
-	return nil, errors.New("Not supported.")
+// Bytes returns the cpabe key pem
+func (k *cpabePrivateKey) Bytes() ([]byte, error) {
+	return utils.PrivateKeyToPEM(k.key, nil)
 }
 
 // SKI returns the subject key identifier of this key.
@@ -67,10 +66,9 @@ type cpabeMasterKey struct {
 	key *cpabe.MasterKey
 }
 
-// Bytes converts this key to its byte representation,
-// if this operation is allowed.
+// Bytes returns the cpabe key pem
 func (k *cpabeMasterKey) Bytes() (raw []byte, err error) {
-	return nil, errors.New("Not supported.")
+	return utils.PrivateKeyToPEM(k.key, nil)
 }
 
 // SKI returns the subject key identifier of this key.
@@ -131,7 +129,9 @@ func (p *cpabeParams) SKI() []byte {
 
 	// Marshall
 	raw, err := proto.Marshal(p.params)
-	panic(err)
+	if err != nil {
+		panic(err)
+	}
 
 	// Hash it
 	hash := sha256.New()

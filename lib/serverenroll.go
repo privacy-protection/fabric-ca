@@ -150,6 +150,16 @@ func handleEnroll(ctx *serverRequestContextImpl, id string) (interface{}, error)
 		log.Debugf("Adding attribute extension to CSR: %+v", ext)
 		req.Extensions = append(req.Extensions, *ext)
 	}
+	// Get cpabe extension
+	cpabeExtension, err := ca.GetCPABEParamsExtension()
+	if err != nil {
+		return nil, errors.WithMessage(err, "Failed to get cpabe params extension")
+	}
+	// If the cpabe extension is not nil, add it to the request
+	if cpabeExtension != nil {
+		log.Debugf("Adding cpabe params extension to CSR: %+v", ext)
+		req.Extensions = append(req.Extensions, *cpabeExtension)
+	}
 	// Sign the certificate
 	cert, err := ca.enrollSigner.Sign(req.SignRequest)
 	if err != nil {
@@ -162,6 +172,14 @@ func handleEnroll(ctx *serverRequestContextImpl, id string) (interface{}, error)
 	err = ca.fillCAInfo(&resp.ServerInfo)
 	if err != nil {
 		return nil, err
+	}
+	// Generate the cpabe key and add to the response
+	cpabeKeyBytes, err := ca.GenerateCPABEKeyBytes(req.Extensions)
+	if err != nil {
+		return nil, errors.WithMessage(err, "Generate CPABE private key failure")
+	}
+	if cpabeKeyBytes != nil {
+		resp.CPABEKey = util.B64Encode(cpabeKeyBytes)
 	}
 	// Success
 	return resp, nil

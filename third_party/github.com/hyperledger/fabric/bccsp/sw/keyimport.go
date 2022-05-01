@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp"
 	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp/utils"
 	"github.com/privacy-protection/common/abe/protos/cpabe"
@@ -175,7 +176,7 @@ func (*cpabePrivateKeyImportOptsKeyImporter) KeyImport(raw interface{}, opts bcc
 
 	lowLevelKey, err := utils.DERToPrivateKey(der)
 	if err != nil {
-		return nil, fmt.Errorf("Failed converting PKIX to ECDSA public key [%s]", err)
+		return nil, fmt.Errorf("Failed converting cpabe key [%s]", err)
 	}
 
 	cpabeMK, ok := lowLevelKey.(*cpabe.MasterKey)
@@ -189,4 +190,24 @@ func (*cpabePrivateKeyImportOptsKeyImporter) KeyImport(raw interface{}, opts bcc
 	}
 
 	return nil, errors.New("Failed casting to CPABE private key. Invalid raw material.")
+}
+
+type cpabeParamsImportOptsKeyImporter struct{}
+
+func (*cpabeParamsImportOptsKeyImporter) KeyImport(raw interface{}, opts bccsp.KeyImportOpts) (bccsp.Key, error) {
+	b, ok := raw.([]byte)
+	if !ok {
+		return nil, errors.New("[cpabeParamsImportOptsKeyImporter] Invalid raw material. Expected byte array.")
+	}
+
+	if len(b) == 0 {
+		return nil, errors.New("[cpabeParamsImportOptsKeyImporter] Invalid raw. It must not be nil.")
+	}
+
+	params := &cpabe.Params{}
+	if err := proto.Unmarshal(b, params); err != nil {
+		return nil, fmt.Errorf("unmarshal Params error, %v", err)
+	}
+	k := &cpabeParams{params: params}
+	return k, nil
 }

@@ -1,6 +1,7 @@
 package sw
 
 import (
+	"bytes"
 	"encoding/pem"
 	"testing"
 
@@ -37,4 +38,23 @@ func TestCPABEKeyImport(t *testing.T) {
 	_, ok = k.(*cpabePrivateKey)
 	require.True(t, ok)
 
+}
+
+func TestCPABEParamsImport(t *testing.T) {
+	masterKey, err := core.Init()
+	require.NoError(t, err)
+
+	k := &cpabeMasterKey{masterKey}
+	pk, err := k.PublicKey()
+	require.NoError(t, err)
+	b, err := pk.Bytes()
+	require.NoError(t, err)
+
+	ki := &cpabeParamsImportOptsKeyImporter{}
+	params, err := ki.KeyImport(b, nil)
+	require.NoError(t, err)
+
+	masterKeySKI := k.SKI()
+	paramsSKI := params.SKI()
+	require.True(t, bytes.Equal(masterKeySKI, paramsSKI))
 }
