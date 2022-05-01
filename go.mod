@@ -6,6 +6,8 @@ require (
 	github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible
 	github.com/VividCortex/gohistogram v1.0.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/btcsuite/btcd v0.22.1 // indirect
+	github.com/ethereum/go-ethereum v1.9.0
 	github.com/felixge/httpsnoop v1.0.1
 	github.com/go-kit/kit v0.7.0
 	github.com/go-logfmt/logfmt v0.5.0 // indirect

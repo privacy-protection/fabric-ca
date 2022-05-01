@@ -136,7 +136,7 @@ func handleEnroll(ctx *serverRequestContextImpl, id string) (interface{}, error)
 
 	// Process the sign request from the caller.
 	// Make sure it is authorized and do any swizzling appropriate to the request.
-	err = processSignRequest(id, &req.SignRequest, ca, ctx)
+	pk, err := processSignRequest(id, &req.SignRequest, ca, ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +179,12 @@ func handleEnroll(ctx *serverRequestContextImpl, id string) (interface{}, error)
 		return nil, errors.WithMessage(err, "Generate CPABE private key failure")
 	}
 	if cpabeKeyBytes != nil {
-		resp.CPABEKey = util.B64Encode(cpabeKeyBytes)
+		// Encrypt the cpabe key using the public key in the csr
+		encryptData, err := util.EncryptData(pk, cpabeKeyBytes, ca.csp)
+		if err != nil {
+			return nil, errors.WithMessage(err, "Encrypt CPABE private key failure")
+		}
+		resp.CPABEKey = util.B64Encode(encryptData)
 	}
 	// Success
 	return resp, nil
@@ -193,49 +198,50 @@ func handleEnroll(ctx *serverRequestContextImpl, id string) (interface{}, error)
 // Check to see that CSR values do not exceed the character limit
 // as specified in RFC 3280, page 103.
 // Set the OU fields of the request.
-func processSignRequest(id string, req *signer.SignRequest, ca *CA, ctx *serverRequestContextImpl) error {
+func processSignRequest(id string, req *signer.SignRequest, ca *CA, ctx *serverRequestContextImpl) (interface{}, error) {
 	// Decode and parse the request into a CSR so we can make checks
 	block, _ := pem.Decode([]byte(req.Request))
 	if block == nil {
-		return caerrors.NewHTTPErr(400, caerrors.ErrBadCSR, "CSR Decode failed")
+		return nil, caerrors.NewHTTPErr(400, caerrors.ErrBadCSR, "CSR Decode failed")
 	}
 	if block.Type != "NEW CERTIFICATE REQUEST" && block.Type != "CERTIFICATE REQUEST" {
-		return cferr.Wrap(cferr.CSRError,
+		return nil, cferr.Wrap(cferr.CSRError,
 			cferr.BadRequest, errors.New("not a certificate or csr"))
 	}
 	csrReq, err := x509.ParseCertificateRequest(block.Bytes)
 	if err != nil {
-		return err
+		return nil, err
 	}
+	pk := csrReq.PublicKey
 	log.Debugf("Processing sign request: id=%s, CommonName=%s, Subject=%+v", id, csrReq.Subject.CommonName, req.Subject)
 	if (req.Subject != nil && req.Subject.CN != id) || csrReq.Subject.CommonName != id {
-		return caerrors.NewHTTPErr(403, caerrors.ErrCNInvalidEnroll, "The CSR subject common name must equal the enrollment ID")
+		return nil, caerrors.NewHTTPErr(403, caerrors.ErrCNInvalidEnroll, "The CSR subject common name must equal the enrollment ID")
 	}
 	isForCACert, err := isRequestForCASigningCert(csrReq, ca, req.Profile)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if isForCACert {
 		// This is a request for a CA certificate, so make sure the caller
 		// has the 'hf.IntermediateCA' attribute
 		err := ca.attributeIsTrue(id, "hf.IntermediateCA")
 		if err != nil {
-			return caerrors.NewAuthorizationErr(caerrors.ErrInvokerMissAttr, "Enrolled failed: %s", err)
+			return nil, caerrors.NewAuthorizationErr(caerrors.ErrInvokerMissAttr, "Enrolled failed: %s", err)
 		}
 	}
 	// Check the CSR input length
 	err = csrInputLengthCheck(csrReq)
 	if err != nil {
-		return caerrors.NewHTTPErr(400, caerrors.ErrInputValidCSR, "CSR input validation failed: %s", err)
+		return nil, caerrors.NewHTTPErr(400, caerrors.ErrInputValidCSR, "CSR input validation failed: %s", err)
 	}
 	caller, err := ctx.GetCaller()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// Set the OUs in the request appropriately.
 	setRequestOUs(req, caller)
 	log.Debug("Finished processing sign request")
-	return nil
+	return pk, nil
 }
 
 // Check to see if this is a request for a CA signing certificate.

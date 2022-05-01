@@ -19,6 +19,7 @@ package sw
 import (
 	"crypto/rand"
 	"crypto/rsa"
+	"encoding/asn1"
 	"errors"
 	"fmt"
 
@@ -69,4 +70,58 @@ func (v *rsaPublicKeyKeyVerifier) Verify(k bccsp.Key, signature, digest []byte, 
 	default:
 		return false, fmt.Errorf("Opts type not recognized [%s]", opts)
 	}
+}
+
+// RSACiphertext the rsa ciphertext
+type RSACiphertext struct {
+	Key, Data []byte
+}
+
+type rsaEncryptor struct{}
+
+func (e *rsaEncryptor) Encrypt(k bccsp.Key, plaintext []byte, opts bccsp.EncrypterOpts) ([]byte, error) {
+	rsaCiphertext := &RSACiphertext{}
+
+	// Generate the aes key
+	aesKey, err := GetRandomBytes(16)
+	if err != nil {
+		return nil, fmt.Errorf("generate aes key error, %v", err)
+	}
+	// Encrypt the data by aes
+	rsaCiphertext.Data, err = AESCBCPKCS7Encrypt(aesKey, plaintext)
+	if err != nil {
+		return nil, fmt.Errorf("aes encrypt error, %v", err)
+	}
+	// Encrypt the aes key by rsa
+	pubKey := k.(*rsaPublicKey).pubKey
+	rsaCiphertext.Key, err = rsa.EncryptPKCS1v15(rand.Reader, pubKey, aesKey)
+	if err != nil {
+		return nil, fmt.Errorf("rsa encrypt error, %v", err)
+	}
+	// Marsahl the ciphertext
+	return asn1.Marshal(*rsaCiphertext)
+}
+
+type rsaDecryptor struct{}
+
+func (d *rsaDecryptor) Decrypt(k bccsp.Key, ciphertext []byte, opts bccsp.DecrypterOpts) ([]byte, error) {
+	// Unmarshal the ciphertext
+	rsaCiphertext := &RSACiphertext{}
+	_, err := asn1.Unmarshal(ciphertext, rsaCiphertext)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal RSACiphertext error, %v", err)
+	}
+	// Decrypt the aes key by rsa
+	privKey := k.(*rsaPrivateKey).privKey
+	aesKey, err := rsa.DecryptPKCS1v15(rand.Reader, privKey, rsaCiphertext.Key)
+	if err != nil {
+		return nil, fmt.Errorf("rsa decrypt error, %v", err)
+	}
+	// Decrypt the data by aes
+	plaintext, err := AESCBCPKCS7Decrypt(aesKey, rsaCiphertext.Data)
+	if err != nil {
+		return nil, fmt.Errorf("aes decrypt error, %v", err)
+	}
+
+	return plaintext, nil
 }

@@ -350,3 +350,16 @@ func LoadX509KeyPair(certFile, keyFile string, csp bccsp.BCCSP) (*tls.Certificat
 
 	return cert, nil
 }
+
+// EncryptData encrypts the data using the public key
+func EncryptData(pk interface{}, data []byte, csp bccsp.BCCSP) ([]byte, error) {
+	k, err := csp.KeyImport(pk, &bccsp.PublicKeyImportOpts{Temporary: true})
+	if err != nil {
+		return nil, fmt.Errorf("import public key error, %v", err)
+	}
+	b, err := csp.Encrypt(k, data, nil)
+	if err != nil {
+		return nil, fmt.Errorf("csp encrypt error, %v", err)
+	}
+	return b, nil
+}

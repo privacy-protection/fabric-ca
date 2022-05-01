@@ -54,10 +54,14 @@ func NewWithParams(securityLevel int, hashFamily string, keyStore bccsp.KeyStore
 	// Set the Encryptors
 	swbccsp.AddWrapper(reflect.TypeOf(&aesPrivateKey{}), &aescbcpkcs7Encryptor{})
 	swbccsp.AddWrapper(reflect.TypeOf(&cpabeParams{}), &cpabeEncryptor{})
+	swbccsp.AddWrapper(reflect.TypeOf(&rsaPublicKey{}), &rsaEncryptor{})
+	swbccsp.AddWrapper(reflect.TypeOf(&ecdsaPublicKey{}), &ecdsaEncryptor{})
 
 	// Set the Decryptors
 	swbccsp.AddWrapper(reflect.TypeOf(&aesPrivateKey{}), &aescbcpkcs7Decryptor{})
 	swbccsp.AddWrapper(reflect.TypeOf(&cpabePrivateKey{}), &cpabeDecryptor{})
+	swbccsp.AddWrapper(reflect.TypeOf(&rsaPrivateKey{}), &rsaDecryptor{})
+	swbccsp.AddWrapper(reflect.TypeOf(&ecdsaPrivateKey{}), &ecdsaDecryptor{})
 
 	// Set the Signers
 	swbccsp.AddWrapper(reflect.TypeOf(&ecdsaPrivateKey{}), &ecdsaSigner{})
@@ -106,6 +110,7 @@ func NewWithParams(securityLevel int, hashFamily string, keyStore bccsp.KeyStore
 	swbccsp.AddWrapper(reflect.TypeOf(&bccsp.ECDSAGoPublicKeyImportOpts{}), &ecdsaGoPublicKeyImportOptsKeyImporter{})
 	swbccsp.AddWrapper(reflect.TypeOf(&bccsp.RSAGoPublicKeyImportOpts{}), &rsaGoPublicKeyImportOptsKeyImporter{})
 	swbccsp.AddWrapper(reflect.TypeOf(&bccsp.X509PublicKeyImportOpts{}), &x509PublicKeyImportOptsKeyImporter{bccsp: swbccsp})
+	swbccsp.AddWrapper(reflect.TypeOf(&bccsp.PublicKeyImportOpts{}), &publicKeyImportOptsKeyImporter{bccsp: swbccsp})
 	swbccsp.AddWrapper(reflect.TypeOf(&bccsp.CPABEKeyImportOpts{}), &cpabePrivateKeyImportOptsKeyImporter{})
 	swbccsp.AddWrapper(reflect.TypeOf(&bccsp.CPABEParamsImportOpts{}), &cpabeParamsImportOptsKeyImporter{})
 

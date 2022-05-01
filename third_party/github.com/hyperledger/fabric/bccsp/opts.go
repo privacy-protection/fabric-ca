@@ -328,6 +328,21 @@ func (opts *X509PublicKeyImportOpts) Ephemeral() bool {
 	return opts.Temporary
 }
 
+// PublicKeyImportOpts contains options for importing public keys
+type PublicKeyImportOpts struct {
+	Temporary bool
+}
+
+// Algorithm returns the key importation algorithm identifier (to be used).
+func (opts *PublicKeyImportOpts) Algorithm() string {
+	return X509Certificate
+}
+
+// Ephemeral returns true if the key to generate has to be ephemeral, false otherwise.
+func (opts *PublicKeyImportOpts) Ephemeral() bool {
+	return opts.Temporary
+}
+
 // CPABEKeyGenOpts contains options for cpabe key deriver
 type CPABEKeyGenOpts struct {
 	// Temporary represents whether only sotre the key into memory.

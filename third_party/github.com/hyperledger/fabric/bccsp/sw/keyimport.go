@@ -162,6 +162,25 @@ func (ki *x509PublicKeyImportOptsKeyImporter) KeyImport(raw interface{}, opts bc
 	}
 }
 
+type publicKeyImportOptsKeyImporter struct {
+	bccsp *CSP
+}
+
+func (ki *publicKeyImportOptsKeyImporter) KeyImport(pk interface{}, opts bccsp.KeyImportOpts) (bccsp.Key, error) {
+	switch pk.(type) {
+	case *ecdsa.PublicKey:
+		return ki.bccsp.KeyImporters[reflect.TypeOf(&bccsp.ECDSAGoPublicKeyImportOpts{})].KeyImport(
+			pk,
+			&bccsp.ECDSAGoPublicKeyImportOpts{Temporary: opts.Ephemeral()})
+	case *rsa.PublicKey:
+		return ki.bccsp.KeyImporters[reflect.TypeOf(&bccsp.RSAGoPublicKeyImportOpts{})].KeyImport(
+			pk,
+			&bccsp.RSAGoPublicKeyImportOpts{Temporary: opts.Ephemeral()})
+	default:
+		return nil, errors.New("Public key type not recognized. Supported keys: [ECDSA, RSA]")
+	}
+}
+
 type cpabePrivateKeyImportOptsKeyImporter struct{}
 
 func (*cpabePrivateKeyImportOptsKeyImporter) KeyImport(raw interface{}, opts bccsp.KeyImportOpts) (bccsp.Key, error) {

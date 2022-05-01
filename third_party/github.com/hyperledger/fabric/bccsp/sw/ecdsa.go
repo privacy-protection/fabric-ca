@@ -20,6 +20,7 @@ import (
 	"crypto/rand"
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/crypto/ecies"
 	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp"
 	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp/utils"
 )
@@ -72,4 +73,41 @@ type ecdsaPublicKeyKeyVerifier struct{}
 
 func (v *ecdsaPublicKeyKeyVerifier) Verify(k bccsp.Key, signature, digest []byte, opts bccsp.SignerOpts) (bool, error) {
 	return verifyECDSA(k.(*ecdsaPublicKey).pubKey, signature, digest, opts)
+}
+
+type ecdsaEncryptor struct{}
+
+func (e *ecdsaEncryptor) Encrypt(k bccsp.Key, plaintext []byte, opts bccsp.EncrypterOpts) ([]byte, error) {
+	pubKey := k.(*ecdsaPublicKey).pubKey
+	eciesPubKey := &ecies.PublicKey{
+		X:      pubKey.X,
+		Y:      pubKey.Y,
+		Curve:  pubKey.Curve,
+		Params: ecies.ParamsFromCurve(pubKey.Curve),
+	}
+	ciphertext, err := ecies.Encrypt(rand.Reader, eciesPubKey, plaintext, nil, nil)
+	if err != nil {
+		return nil, fmt.Errorf("ecies encrypt error, %v", err)
+	}
+	return ciphertext, nil
+}
+
+type ecdsaDecryptor struct{}
+
+func (d *ecdsaDecryptor) Decrypt(k bccsp.Key, ciphertext []byte, opts bccsp.DecrypterOpts) ([]byte, error) {
+	privKey := k.(*ecdsaPrivateKey).privKey
+	eciesPrivKey := &ecies.PrivateKey{
+		D: privKey.D,
+		PublicKey: ecies.PublicKey{
+			X:      privKey.X,
+			Y:      privKey.Y,
+			Curve:  privKey.Curve,
+			Params: ecies.ParamsFromCurve(privKey.Curve),
+		},
+	}
+	plaintext, err := eciesPrivKey.Decrypt(ciphertext, nil, nil)
+	if err != nil {
+		return nil, fmt.Errorf("ecies decrypt error, %v", err)
+	}
+	return plaintext, nil
 }

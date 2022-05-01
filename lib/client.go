@@ -348,9 +348,13 @@ func (c *Client) handleX509Enroll(req *api.EnrollmentRequest) (*EnrollmentRespon
 
 	// Store the cpabe key
 	if result.CPABEKey != "" {
-		cpabeKeyBytes, err := util.B64Decode(result.CPABEKey)
+		encryptedKeyBytes, err := util.B64Decode(result.CPABEKey)
 		if err != nil {
 			return nil, errors.WithMessage(err, "Decode cpabe key error")
+		}
+		cpabeKeyBytes, err := c.csp.Decrypt(key, encryptedKeyBytes, nil)
+		if err != nil {
+			return nil, errors.WithMessage(err, "Decrypt cpabe key error")
 		}
 		block, _ := pem.Decode(cpabeKeyBytes)
 		if block == nil {
