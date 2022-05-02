@@ -37,6 +37,9 @@ import (
 	cadbuser "github.com/hyperledger/fabric-ca/lib/server/user"
 	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/csr"
 	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/log"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp"
+	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp/factory"
+	"github.com/privacy-protection/common/abe/parser"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -2677,4 +2680,75 @@ func startServerWithCustomExpiry(home string, port int, certExpiry string, t *te
 		t.Fatalf("Failed to start server: %s", err)
 	}
 	return srv
+}
+
+func TestCPABEFromEnrollCertificate(t *testing.T) {
+	testDir := filepath.Join(tdDir, "testCPABEFromEnrollCertificate")
+	serverHomeDir := filepath.Join(testDir, "server")
+	err := os.RemoveAll(testDir)
+	assert.NoError(t, err)
+
+	// Remove home directory that this test is going to create before
+	// exiting the test case
+	defer os.RemoveAll(testDir)
+
+	// Test enroll with ecdsa algorithm and 384 key size
+	srv := setupGenCSRTest(t, serverHomeDir)
+	defer stopAndCleanupServer(t, srv)
+
+	// Enroll admin
+	adminHomeDir := filepath.Join(testDir, "admin")
+	err = RunMain([]string{cmdName, "enroll", "-H", adminHomeDir, "-u", "http://admin:adminpw@localhost:7090"})
+	assert.NoError(t, err)
+
+	// Register test user
+	id, pass := "user", "pass"
+	adminUserConfig := path.Join(adminHomeDir, "config.yaml")
+	err = RunMain([]string{
+		cmdName, "register", "-d",
+		"-c", adminUserConfig,
+		"-u", "http://localhost:7090",
+		"--id.name", id,
+		"--id.secret", pass,
+		"--id.type", "user",
+		"--id.affiliation", "org1",
+		"--id.attrs", "test=true:ecert"})
+	assert.NoError(t, err)
+
+	// Enroll user
+	userHomeDir := filepath.Join(testDir, "user")
+	err = RunMain([]string{cmdName, "enroll", "-H", userHomeDir, "-u", fmt.Sprintf("http://%s:%s@localhost:7090", id, pass)})
+	assert.NoError(t, err)
+
+	// Init the user bccsp
+	opts := &factory.FactoryOpts{ProviderName: "SW"}
+	csp, err := util.InitBCCSP(&opts, "", userHomeDir)
+	assert.NoError(t, err)
+	// Get the params from certificate
+	params, err := util.BccspBackedCPABEParams(filepath.Join(userHomeDir, "msp/signcerts/cert.pem"), csp)
+	assert.NoError(t, err)
+	// Encrypt the data
+	data := []byte("test data")
+	tree, err := parser.ParsePolicy("test.true and hf.EnrollmentID.user")
+	assert.NoError(t, err)
+	ciphertext, err := csp.Encrypt(params, data, &bccsp.CPABEEcnryptOpts{Tree: tree})
+	assert.NoError(t, err)
+	// Get the cpabe private key
+	key, err := util.BccspBackedCPABEPrivateKey(filepath.Join(userHomeDir, "msp/signcerts/cert.pem"), csp)
+	assert.NoError(t, err)
+	// Decode the data
+	decodedData, err := csp.Decrypt(key, ciphertext, nil)
+	assert.NoError(t, err)
+	assert.True(t, bytes.Equal(data, decodedData))
+
+	// Test invalid decrypt
+	// Encrypt the data
+	data = []byte("test invalid data")
+	tree, err = parser.ParsePolicy("test.true and hf.EnrollmentID.admin")
+	assert.NoError(t, err)
+	ciphertext, err = csp.Encrypt(params, data, &bccsp.CPABEEcnryptOpts{Tree: tree})
+	assert.NoError(t, err)
+	// Decode the data
+	decodedData, err = csp.Decrypt(key, ciphertext, nil)
+	assert.Error(t, err)
 }

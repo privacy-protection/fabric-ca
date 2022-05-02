@@ -10,15 +10,20 @@ import (
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/rsa"
+	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/binary"
 	"encoding/hex"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
+	"sort"
 	"strings"
 	_ "time" // for ocspSignerFromConfig
 
+	"github.com/hyperledger/fabric-ca/lib/attrmgr"
 	"github.com/hyperledger/fabric-ca/lib/cpabe"
 	_ "github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/cli" // for ocspSignerFromConfig
 	"github.com/hyperledger/fabric-ca/third_party/github.com/cloudflare/cfssl/config"
@@ -33,6 +38,7 @@ import (
 	cspsigner "github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp/signer"
 	"github.com/hyperledger/fabric-ca/third_party/github.com/hyperledger/fabric/bccsp/utils"
 	"github.com/pkg/errors"
+	abeutils "github.com/privacy-protection/common/abe/utils"
 )
 
 // GetDefaultBCCSP returns the default BCCSP
@@ -106,6 +112,72 @@ func BccspBackedSigner(caFile, keyFile string, policy *config.Signing, csp bccsp
 
 // BccspBackedCPABEMasterKey attempts to get the master key using csp bccsp.BCCSP.
 func BccspBackedCPABEMasterKey(certFile string, csp bccsp.BCCSP) (bccsp.Key, error) {
+	// Get the params
+	params, err := BccspBackedCPABEParams(certFile, csp)
+	if err != nil {
+		return nil, fmt.Errorf("backed cpabe params error, %v", err)
+	}
+	// Get the cpabe master key
+	return csp.GetKey(params.SKI())
+}
+
+// BccspBackedCPABEPrivateKey attempts to get the private key using csp bccsp.BCCSP.
+func BccspBackedCPABEPrivateKey(certFile string, csp bccsp.BCCSP) (bccsp.Key, error) {
+	// Load cert file
+	certBytes, err := ioutil.ReadFile(certFile)
+	if err != nil {
+		return nil, fmt.Errorf("read file error, %v", err)
+	}
+	// Parse certificate
+	parsedCert, err := helpers.ParseCertificatePEM(certBytes)
+	if err != nil {
+		return nil, fmt.Errorf("parse certificate error, %v", err)
+	}
+	// Get cpabe params and attribute id
+	var paramsBytes []byte
+	var attributeID []int32
+	for _, extensions := range parsedCert.Extensions {
+		if extensions.Id.String() == cpabe.ParamsOIDString {
+			paramsBytes = extensions.Value
+		}
+		if extensions.Id.String() == attrmgr.AttrOIDString {
+			attrs := &attrmgr.Attributes{}
+			if err := json.Unmarshal(extensions.Value, attrs); err != nil {
+				return nil, fmt.Errorf("unmarshal Attributes error, %v", err)
+			}
+			keys := []string{}
+			for key := range attrs.Attrs {
+				keys = append(keys, key)
+			}
+			sort.Sort(sort.StringSlice(keys))
+			for _, key := range keys {
+				attrString := fmt.Sprintf("%s.%s", key, attrs.Attrs[key])
+				attributeID = append(attributeID, int32(abeutils.Hash(attrString)))
+			}
+		}
+	}
+	if paramsBytes == nil {
+		log.Warningf("The certificate in [%s] not support cpabe", certFile)
+		return nil, nil
+	}
+	// Marshall
+	raw := paramsBytes
+	attrLen := len(attributeID)
+	attrBytes := make([]byte, attrLen<<2)
+	for i, attr := range attributeID {
+		binary.BigEndian.PutUint32(attrBytes[i<<2:], uint32(attr))
+	}
+	// Hash it
+	hash := sha256.New()
+	hash.Write(raw)
+	hash.Write(attrBytes)
+	ski := hash.Sum(nil)
+	// Get the cpabe private key
+	return csp.GetKey(ski)
+}
+
+// BccspBackedCPABEParams attempts to get the params using csp bccsp.BCCSP.
+func BccspBackedCPABEParams(certFile string, csp bccsp.BCCSP) (bccsp.Key, error) {
 	// Load cert file
 	certBytes, err := ioutil.ReadFile(certFile)
 	if err != nil {
@@ -128,12 +200,11 @@ func BccspBackedCPABEMasterKey(certFile string, csp bccsp.BCCSP) (bccsp.Key, err
 		return nil, nil
 	}
 	// Import the cpabe params
-	// Get the signer from the cert
 	params, err := csp.KeyImport(paramsBytes, &bccsp.CPABEParamsImportOpts{Temporary: true})
 	if err != nil {
 		return nil, fmt.Errorf("import params error, %v", err)
 	}
-	return csp.GetKey(params.SKI())
+	return params, nil
 }
 
 // getBCCSPKeyOpts generates a key as specified in the request.

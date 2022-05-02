@@ -21,6 +21,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"sync"
 	"time"
@@ -1342,9 +1343,15 @@ func (ca *CA) GenerateCPABEKeyBytes(extensions []signer.Extension) ([]byte, erro
 			if err := json.Unmarshal(b, attrs); err != nil {
 				return nil, fmt.Errorf("unmarshal Attributes error, %v", err)
 			}
+			// Sort the key
+			keys := []string{}
+			for key := range attrs.Attrs {
+				keys = append(keys, key)
+			}
+			sort.Sort(sort.StringSlice(keys))
 			// Format attributes and transfer it to int32
 			attributeID := []int32{}
-			for key := range attrs.Attrs {
+			for _, key := range keys {
 				attrString := fmt.Sprintf("%s.%s", key, attrs.Attrs[key])
 				attributeID = append(attributeID, int32(utils.Hash(attrString)))
 			}
