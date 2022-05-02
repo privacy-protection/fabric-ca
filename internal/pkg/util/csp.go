@@ -117,6 +117,9 @@ func BccspBackedCPABEMasterKey(certFile string, csp bccsp.BCCSP) (bccsp.Key, err
 	if err != nil {
 		return nil, fmt.Errorf("backed cpabe params error, %v", err)
 	}
+	if params == nil {
+		return nil, nil
+	}
 	// Get the cpabe master key
 	return csp.GetKey(params.SKI())
 }

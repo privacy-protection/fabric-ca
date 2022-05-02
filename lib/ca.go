@@ -499,6 +499,7 @@ func (ca *CA) VerifyCertificate(cert *x509.Certificate) error {
 	if err != nil {
 		return errors.WithMessage(err, "Failed to verify certificate")
 	}
+	// TODO: zghh verify the cpabe params in the certificate
 	return nil
 }
 
