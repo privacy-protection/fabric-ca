@@ -6,27 +6,29 @@
 ARG GO_VER
 ARG ALPINE_VER
 
-FROM golang:${GO_VER}-alpine as builder
+FROM golang:${GO_VER} as builder
 ARG GO_LDFLAGS
 ARG GO_TAGS
 
-RUN apk add --no-cache \
-	gcc \
-	git \
-	musl-dev;
+ENV GOPROXY https://goproxy.cn
 
 ADD . /build/fabric-ca
 WORKDIR /build/fabric-ca
-RUN go install -tags "${GO_TAGS}" -ldflags "${GO_LDFLAGS}" \
+RUN mv common .. && mv cp-abe .. && \
+    go install -tags "${GO_TAGS}" -ldflags "${GO_LDFLAGS}" \
 	github.com/hyperledger/fabric-ca/cmd/fabric-ca-server \
 	&& go install -tags "${GO_TAGS}" -ldflags "${GO_LDFLAGS}" \
 	github.com/hyperledger/fabric-ca/cmd/fabric-ca-client
 
 
 FROM alpine:${ALPINE_VER}
-RUN apk add --no-cache \
-	tzdata;
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
+    apk add --no-cache tzdata
 ENV FABRIC_CA_HOME /etc/hyperledger/fabric-ca-server
 COPY --from=builder /go/bin /usr/local/bin
+COPY --from=builder /lib/x86_64-linux-gnu/libdl.so.2 /lib/x86_64-linux-gnu/libdl.so.2
+COPY --from=builder /lib/x86_64-linux-gnu/libpthread.so.0 /lib/x86_64-linux-gnu/libpthread.so.0
+COPY --from=builder /lib/x86_64-linux-gnu/libc.so.6 /lib/x86_64-linux-gnu/libc.so.6
+COPY --from=builder /lib64/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2
 EXPOSE 7054
 CMD fabric-ca-server start -b admin:adminpw

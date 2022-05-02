@@ -34,6 +34,9 @@ DEBIAN_VER ?= stretch
 BASE_VERSION = 1.5.0
 IS_RELEASE = true
 
+COMMON_VER = $(shell cat go.mod | grep github.com/privacy-protection/common | grep -v "=>" | awk '{print $$2}')
+CPABE_VER = $(shell cat go.mod | grep github.com/privacy-protection/cp-abe | grep -v "=>" | awk '{print $$2}')
+
 ARCH=$(shell go env GOARCH)
 MARCH=$(shell go env GOOS)-$(shell go env GOARCH)
 STABLE_TAG ?= $(ARCH)-$(BASE_VERSION)-stable
@@ -110,6 +113,10 @@ bin/%: $(GO_SOURCE)
 build/image/fabric-ca/$(DUMMY):
 	@mkdir -p $(@D)
 	$(eval TARGET = ${patsubst build/image/%/$(DUMMY),%,${@}})
+	@rm -rf common && cp -r ../common .
+	@cd common && git checkout ${COMMON_VER}
+	@rm -rf cp-abe && cp -r ../cp-abe .
+	@cd cp-abe && git checkout ${CPABE_VER} && git submodule update --init --recursive
 	@echo "Docker:  building $(TARGET) image"
 	$(DBUILD) -f images/$(TARGET)/Dockerfile \
 		--build-arg GO_VER=${GO_VER} \
@@ -119,6 +126,7 @@ build/image/fabric-ca/$(DUMMY):
 		-t $(DOCKER_NS)/$(TARGET) .
 	docker tag $(DOCKER_NS)/$(TARGET) $(DOCKER_NS)/$(TARGET):$(BASE_VERSION)
 	docker tag $(DOCKER_NS)/$(TARGET) $(DOCKER_NS)/$(TARGET):$(DOCKER_TAG)
+	@rm -rf common cp-abe
 	@touch $@
 
 build/image/fabric-ca-fvt/$(DUMMY):
